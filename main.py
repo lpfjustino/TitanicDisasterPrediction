@@ -6,11 +6,11 @@ from math import isnan
 from enum import Enum
 
 class Age(Enum):
-    INFANT = 0
-    CHILD = 1
-    TEEN = 2
-    ADULT = 3
-    ELDERLY = 4
+    infant = 0
+    child = 1
+    teen = 2
+    adult = 3
+    elderly = 4
 
 
 def preprocess(data_frame):
@@ -34,8 +34,10 @@ def preprocess(data_frame):
 
     # Discretization of ages
     bins = [2, 10, 18, 60]
-    disc_ages = pd.Series(np.digitize(ages, bins))
+    disc_ages = pd.Series(np.digitize(ages, bins)).map(lambda x: Age(x).name)
     data_set.loc[:, 'Age'] = disc_ages
+
+    print(data_set)
 
     return id, data_set, expected
 
