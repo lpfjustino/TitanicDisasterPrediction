@@ -35,15 +35,6 @@ def preprocess(data_frame):
         avg = int(avg_ages[p.Sex][p.Pclass])
         data_set.set_value(i,'Age', avg)
 
-    # # Replace empty fares by the average fare
-    # fares = data_set.loc[:, 'Fare']
-    # avg = fares.mean()
-    # missing_fares = data_set.loc[ages.isnull() == True, :]
-    # print(fares)
-    # print(missing_fares, avg)
-    # for i, p in missing_fares.iterrows():
-    #     data_set.set_value(i,'Fare', avg)
-
     # Discretization of ages
     bins = [2, 10, 18, 60]
     #disc_ages = pd.Series(np.digitize(ages, bins)).map(lambda x: Age(x).name)
@@ -52,7 +43,7 @@ def preprocess(data_frame):
 
     # Discretization of fares
     fares = data_set.loc[:, 'Fare']
-    bins = np.linspace(0, 150, 10)
+    bins = np.linspace(0, 100, 5)
     disc_fares = pd.Series(np.digitize(fares, bins))
     data_set.loc[:, 'Fare'] = disc_fares
 
