@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+import time
+
 from sklearn.naive_bayes import GaussianNB
 
 from enum import Enum
@@ -74,5 +76,25 @@ data_set = pd.read_csv("train.csv")
 
 id, data_set, expected = preprocess(data_set)
 
+n_rows, n_features = data_set.shape
+
+train_portion = int(0.7 * n_rows)
+
+train_set = data_set.loc[:train_portion, :]
+train_labels = expected.loc[:train_portion]
+
+test_set = data_set.loc[train_portion:, :]
+test_labels = expected.loc[train_portion:].as_matrix()
+
 gnb = GaussianNB()
-gnb.fit(data_set, expected)
+gnb.fit(train_set, train_labels)
+
+observed = gnb.predict(test_set)
+accuracy = sum(observed == test_labels) / len(observed)
+print(accuracy)
+
+
+# for i, example in test_set.iterrows():
+#     observed = gnb.predict(example)
+#     print(observed, ' vs ', test_labels[i])
+#     time.sleep(2)
