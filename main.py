@@ -1,30 +1,20 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-
-import time
-
 from sklearn.naive_bayes import GaussianNB
+import naive_bayes as nb
 
-from enum import Enum
-
-class Age(Enum):
-    infant = 0
-    child = 1
-    teen = 2
-    adult = 3
-    elderly = 4
-
-
-def preprocess(data_frame):
+def preprocess(data_frame, train_set=True):
     # Generates a copy of the original dataframe
     df = data_frame.copy()
 
     # Cutting out irrelevant features
     id = data_frame.loc[:, 'PassengerId']
-    expected = data_frame.loc[:, 'Survived']
     features = ['Pclass','Sex','Age','SibSp','Parch','Fare','Embarked']
     data_set = data_frame.loc[:, features]
+    if train_set:
+        expected = data_frame.loc[:, 'Survived']
+    else:
+        expected = None
 
     # Replace empty ages by their means by sex and passenger class groups
     # Average age by sex and passenger class
@@ -37,7 +27,6 @@ def preprocess(data_frame):
 
     # Discretization of ages
     bins = [2, 10, 18, 60]
-    #disc_ages = pd.Series(np.digitize(ages, bins)).map(lambda x: Age(x).name)
     disc_ages = pd.Series(np.digitize(ages, bins))
     data_set.loc[:, 'Age'] = disc_ages
 
@@ -61,31 +50,51 @@ def preprocess(data_frame):
     return id, data_set, expected
 
 
+def preprocess_test_set(data_frame):
+    id, data_set, _ = preprocess(data_frame, False)
+    return id, data_set
+
+def benchmark(data_set, expected):
+    n_rows, n_features = data_set.shape
+
+    train_portion = int(0.7 * n_rows)
+
+    train_set = data_set.loc[:train_portion, :].as_matrix()
+    train_labels = expected.loc[:train_portion].as_matrix()
+
+    test_set = data_set.loc[train_portion:, :].as_matrix()
+    test_labels = expected.loc[train_portion:].as_matrix()
+
+    # gnb = GaussianNB()
+    # gnb.fit(train_set, train_labels)
+    # observed = gnb.predict(test_set)
+
+    model = nb.NaiveBayes()
+    model.fit(train_set, train_labels)
+    observed = model.predict(test_set)
+
+    matches = observed == test_labels
+    train_size = test_set.shape[0]
+    accuracy = sum(matches) / train_size
+    print(accuracy)
+
+
+def run(data_set, test_set):
+    gnb = GaussianNB()
+    gnb.fit(data_set, expected)
+
+    observed = gnb.predict(test_set)
+
+    print('PassengerId,Survived')
+    for i, passenger in test_set.iterrows():
+        print(id.loc[i], ',', observed[i], sep='')
+
+
 # Reading titanic dataset
 data_set = pd.read_csv("train.csv")
-
-
 id, data_set, expected = preprocess(data_set)
+test_set = pd.read_csv("test.csv")
+id, test_set = preprocess_test_set(test_set)
 
-n_rows, n_features = data_set.shape
-
-train_portion = int(0.7 * n_rows)
-
-train_set = data_set.loc[:train_portion, :]
-train_labels = expected.loc[:train_portion]
-
-test_set = data_set.loc[train_portion:, :]
-test_labels = expected.loc[train_portion:].as_matrix()
-
-gnb = GaussianNB()
-gnb.fit(train_set, train_labels)
-
-observed = gnb.predict(test_set)
-accuracy = sum(observed == test_labels) / len(observed)
-print(accuracy)
-
-
-# for i, example in test_set.iterrows():
-#     observed = gnb.predict(example)
-#     print(observed, ' vs ', test_labels[i])
-#     time.sleep(2)
+benchmark(data_set, expected)
+#run(data_set, test_set)
