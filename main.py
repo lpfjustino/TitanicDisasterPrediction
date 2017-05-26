@@ -65,6 +65,7 @@ def benchmark(data_set, expected):
     test_set = data_set.loc[train_portion:, :].as_matrix()
     test_labels = expected.loc[train_portion:].as_matrix()
 
+    # Scikit implementation run
     # gnb = GaussianNB()
     # gnb.fit(train_set, train_labels)
     # observed = gnb.predict(test_set)
@@ -96,5 +97,5 @@ id, data_set, expected = preprocess(data_set)
 test_set = pd.read_csv("test.csv")
 id, test_set = preprocess_test_set(test_set)
 
-benchmark(data_set, expected)
-#run(data_set, test_set)
+#benchmark(data_set, expected)
+run(data_set, test_set)
